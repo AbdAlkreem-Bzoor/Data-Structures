@@ -34,7 +34,7 @@ namespace LinkedList
         }
         public override string ToString()
         {
-            StringBuilder sb = new StringBuilder($"Value: {Value}\n");
+            var sb = new StringBuilder();
             if (Next is null)
             {
                 sb.Append("null");

@@ -5,7 +5,7 @@ namespace LinkedList
     {
         static void Main(string[] args)
         {
-            LinkedList<int> list = new LinkedList<int>();
+            var list = new LinkedList<int>();
             for (int i = 1; i <= 20; i++)
             {
                 list.Add(i);
