@@ -9,6 +9,7 @@ Simple Inventory Management System.csproj
 # dotenv files
 .env
 
+
 # User-specific files
 *.rsuser
 *.suo
