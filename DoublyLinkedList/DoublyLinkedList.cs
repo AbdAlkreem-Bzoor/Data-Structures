@@ -294,6 +294,17 @@ namespace DoublyLinkedList
                 current = next;
             }
 
+            previous = null;
+            current = tail;
+
+            while (current is not null)
+            {
+                next = current.Previous;
+                current.Previous = previous;
+                previous = current;
+                current = next;
+            }
+
             current = head;
             head = tail;
             tail = current;
