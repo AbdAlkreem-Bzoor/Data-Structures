@@ -34,6 +34,7 @@ namespace DoublyLinkedList
             else // tail is not null
             {
                 tail.Next = new Node<T>(item, null, tail);
+                tail.Next.Previous = tail;
                 tail = tail.Next;
             }
             Count++;
@@ -42,10 +43,20 @@ namespace DoublyLinkedList
         {
             if (index < 0 || index > Count)
                 throw new ArgumentOutOfRangeException($"index out of range the index should be between 0 & {Count}");
+            if (Count == 0)
+            {
+                Add(item);
+                return;
+            }
             if (index == 0)
             {
                 var newNode = new Node<T>(item, head);
                 head = newNode;
+                if (head.Next is not null)
+                {
+                    head.Next.Previous = head;
+                }
+                Count++;
             }
             else if (index == Count)
             {
@@ -57,9 +68,10 @@ namespace DoublyLinkedList
                 var newNode = new Node<T>(item, node.current, node.previous);
                 node.current.Previous = newNode;
                 node.previous.Next = newNode;
+                Count++;
             }
-            Count++;
         }
+
         private void RemoveFirst()
         {
             if (Count == 1)
@@ -85,22 +97,6 @@ namespace DoublyLinkedList
                 tail.Next = null;
                 Count--;
             }
-        }
-        public bool Remove(T item)
-        {
-            int index = 0;
-            var temp = head;
-            while (temp is not null)
-            {
-                if (temp.Value.Equals(item))
-                {
-                    RemoveAt(index);
-                    return true;
-                }
-                temp = temp.Next;
-                index++;
-            }
-            return false;
         }
         public void RemoveAt(int index)
         {
