@@ -1,23 +1,21 @@
-﻿using System.Collections.Generic;
-using System.Text;
-using System.Xml.Linq;
-using static System.Formats.Asn1.AsnWriter;
-namespace LinkedList
-{ 
+﻿namespace LinkedList
+{
     public class Program
     {
-        static int x = 5;
-        static Func<int, int> Function(int val)
-        {
-
-            return value => value + val + x;
-        }
         static void Main(string[] args)
         {
-            var func = Function(5);
-            Console.WriteLine(func(5)); // 15
-            Console.WriteLine(func(5)); // 15
-            Console.WriteLine(func(4)); // 14
+            var list = new LinkedList<int>();
+            for (int i = 1; i <= 20; i++)
+            {
+                list.Add(i);
+            }
+            list.Reverse();
+            list.Swap(0, 10);
+            list.Swap(1, 2);
+            list.RemoveAt(0);
+            list.RemoveAt(list.Count - 1);
+            Console.WriteLine(list.Count);
+            Console.WriteLine(list.ToString());
         }
     }
 
