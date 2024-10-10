@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Text;
 
 namespace DoublyLinkedList
 {
@@ -71,7 +67,6 @@ namespace DoublyLinkedList
                 Count++;
             }
         }
-
         private void RemoveFirst()
         {
             if (Count == 1)
@@ -175,7 +170,6 @@ namespace DoublyLinkedList
                 nextR.Previous = nodeL.current;
             }
         }
-
         private void SwapRL((Node<T>? current, Node<T>? previous) nodeL,
             (Node<T>? current, Node<T>? previous) nodeR,
             Node<T>? nextL, Node<T>? nextR, int l, int r)

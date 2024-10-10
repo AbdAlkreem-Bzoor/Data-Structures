@@ -1,12 +1,4 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Security.Cryptography.X509Certificates;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml.Linq;
+﻿using System.Text;
 
 namespace LinkedList
 {
@@ -31,11 +23,11 @@ namespace LinkedList
         }
         public void Add(T item)
         {
-            if (head is null)
+            if (tail is null)
             {
                 head = tail = new Node<T>(item);
             }
-            else // tail is not null
+            else
             {
                 tail.Next = new Node<T>(item);
                 tail = tail.Next;
@@ -50,6 +42,7 @@ namespace LinkedList
             {
                 var newNode = new Node<T>(item, head);
                 head = newNode;
+                Count++;
             }
             else if (index == Count)
             {
@@ -60,8 +53,8 @@ namespace LinkedList
                 var node = GetNodeAt(index);
                 var newNode = new Node<T>(item, node.current);
                 node.previous.Next = newNode;
+                Count++;
             }
-            Count++;
         }
         private void RemoveFirst()
         {
@@ -218,7 +211,7 @@ namespace LinkedList
                 l = r;
                 r = temp;
             }
-            if(Count == 2)
+            if (Count == 2)
             {
                 tail.Next = head;
                 head.Next = null;
@@ -231,11 +224,11 @@ namespace LinkedList
             }
             var nodeL = GetNodeAt(l);
             var nodeR = GetNodeAt(r);
-            
+
             var nextL = nodeL.current?.Next;
             var nextR = nodeR.current?.Next;
 
-            if(r - l == 1)
+            if (r - l == 1)
             {
                 SwapWhenR_LEqualOne(nodeL, nodeR, nextL, nextR, l, r);
             }
