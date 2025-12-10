@@ -304,8 +304,6 @@ public sealed class AvlTree<T> where T : IComparable<T>
     public IList<IList<T>> Bfs()
     {
         var list = new List<IList<T>>(_nodes);
-        for (int i = 0; i < _nodes; i++)
-            list.Add(new List<T>());
 
         var queue = new Queue<TreeNode<T>>();
         queue.Enqueue(_root);
