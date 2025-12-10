@@ -83,11 +83,11 @@ public sealed class AvlTree<T> where T : IComparable<T>
 
         if (compareValue < 0)
         {
-            root.Left = Insert(root.Left, value);
+            root.Left = Delete(root.Left, value);
         }
         else if (compareValue > 0)
         {
-            root.Right = Insert(root.Right, value);
+            root.Right = Delete(root.Right, value);
         }
         else
         {
