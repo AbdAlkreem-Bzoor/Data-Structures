@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "RedBlackTree": {
+      "commandName": "Project"
+    },
+    "Container (Dockerfile)": {
+      "commandName": "Docker"
+    }
+  }
+}
