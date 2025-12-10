@@ -4,13 +4,11 @@ public sealed class AvlTree<T> where T : IComparable<T>
 {
     private TreeNode<T> _root;
     private int _nodes;
-    public AvlTree()
-    {
-        _root = new TreeNode<T>();
-    }
+    public AvlTree() { }
     public AvlTree(T value) : this()
     {
-        _root.Value = value;
+        _root = new TreeNode<T>(value);
+        _nodes = 1;
     }
     public AvlTree(IEnumerable<T> values) : this()
     {
