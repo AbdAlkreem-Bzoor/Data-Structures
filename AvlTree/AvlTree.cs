@@ -3,12 +3,12 @@
 public sealed class AvlTree<T> where T : IComparable<T>
 {
     private TreeNode<T>? _root;
-    private int _nodes;
+    private int _count;
     public AvlTree() { }
     public AvlTree(T value) : this()
     {
         _root = new TreeNode<T>(value);
-        _nodes = 1;
+        _count = 1;
     }
     public AvlTree(IEnumerable<T> values) : this()
     {
@@ -18,7 +18,7 @@ public sealed class AvlTree<T> where T : IComparable<T>
         }
     }
 
-    public int Nodes => _nodes;
+    public int Count => _count;
     public int TreeHeight => _root?.Height ?? -1;
 
     private void UpdateHeight(TreeNode<T> node)
@@ -33,13 +33,13 @@ public sealed class AvlTree<T> where T : IComparable<T>
     public void Insert(T value)
     {
         _root = Insert(_root, value);
-        _nodes++;
     }
 
     private TreeNode<T> Insert(TreeNode<T>? root, T value)
     {
         if (root is null)
         {
+            _count++;
             root = new TreeNode<T>(value);
             return root;
         }
@@ -60,25 +60,11 @@ public sealed class AvlTree<T> where T : IComparable<T>
 
         UpdateHeight(root);
 
-        int rootHeightBalance = root.GetBalance();
-        int leftChildHeightBalance = root.Left?.GetBalance() ?? -1;
-        int rightChildHeightBalance = root.Right?.GetBalance() ?? -1;
+        var rotationNode = RotationNode(root);
 
-        if (rootHeightBalance == -2 && rightChildHeightBalance == -1)              // RR case
+        if (rotationNode is not null)
         {
-            return RightRotation(root);
-        }
-        else if (rootHeightBalance == 2 && leftChildHeightBalance == 1)           // LL case
-        {
-            return LeftRotation(root);
-        }
-        else if (rootHeightBalance == -2 && rightChildHeightBalance == 1)          // RL case
-        {
-            return RightLeftRotation(root);
-        }
-        else if (rootHeightBalance == 2 && leftChildHeightBalance == -1)          // LR case
-        {
-            return LeftRightRotation(root);
+            return rotationNode;
         }
 
         return root;
@@ -87,7 +73,6 @@ public sealed class AvlTree<T> where T : IComparable<T>
     public void Delete(T value)
     {
         _root = Delete(_root, value);
-        if (_nodes > 0) _nodes--;
     }
 
     private TreeNode<T>? Delete(TreeNode<T>? root, T value)
@@ -106,6 +91,7 @@ public sealed class AvlTree<T> where T : IComparable<T>
         }
         else
         {
+            _count--;
             if (root.Left is null && root.Right is null)
             {
                 return null;
@@ -128,6 +114,18 @@ public sealed class AvlTree<T> where T : IComparable<T>
 
         UpdateHeight(root);
 
+        var rotationNode = RotationNode(root);
+
+        if (rotationNode is not null)
+        {
+            return rotationNode;
+        }
+
+        return root;
+    }
+
+    private TreeNode<T>? RotationNode(TreeNode<T> root)
+    {
         int rootHeightBalance = root.GetBalance();
         int leftChildHeightBalance = root.Left?.GetBalance() ?? -1;
         int rightChildHeightBalance = root.Right?.GetBalance() ?? -1;
@@ -149,7 +147,7 @@ public sealed class AvlTree<T> where T : IComparable<T>
             return LeftRightRotation(root);
         }
 
-        return root;
+        return null;
     }
 
     private TreeNode<T> FindMinNode(TreeNode<T> root)
@@ -298,7 +296,7 @@ public sealed class AvlTree<T> where T : IComparable<T>
 
     public IList<IList<T>> Bfs()
     {
-        var list = new List<IList<T>>(_nodes);
+        var list = new List<IList<T>>(_count);
 
         var queue = new Queue<TreeNode<T>>();
         if (_root is not null) queue.Enqueue(_root);

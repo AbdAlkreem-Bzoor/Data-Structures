@@ -10,7 +10,7 @@ public sealed class TreeNode<T>
         Value = value;
     }
 
-    public TreeNode(T value, TreeNode<T>? left, TreeNode<T>? right, int height)
+    public TreeNode(T value, TreeNode<T>? left, TreeNode<T>? right)
     {
         Value = value;
         Left = left;
