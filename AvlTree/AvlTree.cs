@@ -2,7 +2,7 @@
 
 public sealed class AvlTree<T> where T : IComparable<T>
 {
-    private TreeNode<T> _root;
+    private TreeNode<T>? _root;
     private int _nodes;
     public AvlTree() { }
     public AvlTree(T value) : this()
@@ -19,7 +19,7 @@ public sealed class AvlTree<T> where T : IComparable<T>
     }
 
     public int Nodes => _nodes;
-    public int TreeHeight => _root.Height;
+    public int TreeHeight => _root?.Height ?? -1;
 
     private void UpdateHeight(TreeNode<T> node)
     {
@@ -86,11 +86,8 @@ public sealed class AvlTree<T> where T : IComparable<T>
 
     public void Delete(T value)
     {
-        if (value is not null && _nodes > 0)
-        {
-            _root = Delete(_root, value)!;
-            _nodes--;
-        }
+        _root = Delete(_root, value);
+        if (_nodes > 0) _nodes--;
     }
 
     private TreeNode<T>? Delete(TreeNode<T>? root, T value)
@@ -246,9 +243,9 @@ public sealed class AvlTree<T> where T : IComparable<T>
     {
         if (root is null) return;
 
-        InOrder(_root.Left, list);
-        list.Add(_root.Value);
-        InOrder(_root.Right, list);
+        InOrder(root.Left, list);
+        list.Add(root.Value);
+        InOrder(root.Right, list);
     }
 
     public IEnumerable<T> PreOrder()
@@ -262,9 +259,9 @@ public sealed class AvlTree<T> where T : IComparable<T>
     {
         if (root is null) return;
 
-        list.Add(_root.Value);
-        PreOrder(_root.Left, list);
-        PreOrder(_root.Right, list);
+        list.Add(root.Value);
+        PreOrder(root.Left, list);
+        PreOrder(root.Right, list);
     }
 
     public IEnumerable<T> PostOrder()
@@ -278,9 +275,9 @@ public sealed class AvlTree<T> where T : IComparable<T>
     {
         if (root is null) return;
 
-        PostOrder(_root.Left, list);
-        PostOrder(_root.Right, list);
-        list.Add(_root.Value);
+        PostOrder(root.Left, list);
+        PostOrder(root.Right, list);
+        list.Add(root.Value);
     }
 
     public bool Contains(T value)
@@ -304,7 +301,7 @@ public sealed class AvlTree<T> where T : IComparable<T>
         var list = new List<IList<T>>(_nodes);
 
         var queue = new Queue<TreeNode<T>>();
-        queue.Enqueue(_root);
+        if (_root is not null) queue.Enqueue(_root);
 
         int level = 0;
         while (queue.Count > 0)
