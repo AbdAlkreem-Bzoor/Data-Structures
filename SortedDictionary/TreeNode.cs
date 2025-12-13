@@ -14,7 +14,7 @@ public sealed class TreeNode<TKey, TValue>
         Value = value;
         Left = left;
         Right = right;
-        Height = Math.Max(GetHeight(left), GetHeight(right)) + 1;
+        UpdateHeight();
     }
 
     public TKey Key { get; set; }
@@ -27,7 +27,7 @@ public sealed class TreeNode<TKey, TValue>
         {
             return this is null ? -1 : _height;
         }
-        set
+        private set
         {
             _height = value;
         }
@@ -38,9 +38,7 @@ public sealed class TreeNode<TKey, TValue>
         return this is null ? -1 : GetHeight(Left) - GetHeight(Right);
     }
 
-    public int GetLeftChildHeight() => GetHeight(Left);
-
-    public int GetRightChildHeight() => GetHeight(Right);
+    public void UpdateHeight() => Height = Math.Max(GetHeight(Left), GetHeight(Right)) + 1;
 
     private static int GetHeight(TreeNode<TKey, TValue>? node)
     {

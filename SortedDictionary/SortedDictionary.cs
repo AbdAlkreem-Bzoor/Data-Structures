@@ -27,23 +27,14 @@ public sealed class SortedDictionary<TKey, TValue> where TKey : IComparable<TKey
     public int Count => _count;
     public int TreeHeight => _root?.Height ?? -1;
 
-    private void UpdateHeight(TreeNode<TKey, TValue> node)
-    {
-        if (node is null) return;
-        node.Height = Math.Max(
-                               node.GetLeftChildHeight(),
-                               node.GetRightChildHeight()
-                              ) + 1;
-    }
-
     public void Add(TKey key, TValue value)
     {
-        _root = Add(_root, key, value);
+        _root = Add(_root, key, value, true);
     }
 
     public void TryAdd(TKey key, TValue value)
     {
-        _root = Add(_root, key, value, true);
+        _root = Add(_root, key, value);
     }
 
     private TreeNode<TKey, TValue> Add(TreeNode<TKey, TValue>? root, TKey key, TValue value, bool throwException = false)
@@ -72,7 +63,7 @@ public sealed class SortedDictionary<TKey, TValue> where TKey : IComparable<TKey
             return root;
         }
 
-        UpdateHeight(root);
+        root.UpdateHeight();
 
         var rotationNode = RotationNode(root);
 
@@ -130,7 +121,7 @@ public sealed class SortedDictionary<TKey, TValue> where TKey : IComparable<TKey
             }
         }
 
-        UpdateHeight(root);
+        root.UpdateHeight();
 
         var rotationNode = RotationNode(root);
 
@@ -201,9 +192,9 @@ public sealed class SortedDictionary<TKey, TValue> where TKey : IComparable<TKey
         newRoot.Right = root;
         newRoot.Left = middleNode;
 
-        UpdateHeight(root);
-        UpdateHeight(middleNode);
-        UpdateHeight(newRoot);
+        root.UpdateHeight();
+        middleNode.UpdateHeight();
+        newRoot.UpdateHeight();
 
         return newRoot;
     }
@@ -221,9 +212,9 @@ public sealed class SortedDictionary<TKey, TValue> where TKey : IComparable<TKey
         newRoot.Left = root;
         newRoot.Right = middleNode;
 
-        UpdateHeight(root);
-        UpdateHeight(middleNode);
-        UpdateHeight(newRoot);
+        root.UpdateHeight();
+        middleNode.UpdateHeight();
+        newRoot.UpdateHeight();
 
         return newRoot;
     }
@@ -237,8 +228,8 @@ public sealed class SortedDictionary<TKey, TValue> where TKey : IComparable<TKey
         root.Right = newRoot.Left;
         newRoot.Left = root;
 
-        UpdateHeight(root);
-        UpdateHeight(newRoot);
+        root.UpdateHeight();
+        newRoot.UpdateHeight();
 
         return newRoot;
     }
@@ -252,8 +243,8 @@ public sealed class SortedDictionary<TKey, TValue> where TKey : IComparable<TKey
         root.Left = newRoot.Right;
         newRoot.Right = root;
 
-        UpdateHeight(root);
-        UpdateHeight(newRoot);
+        root.UpdateHeight();
+        newRoot.UpdateHeight();
 
         return newRoot;
     }
