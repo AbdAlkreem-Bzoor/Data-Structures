@@ -21,15 +21,6 @@ public sealed class AvlTree<T> where T : IComparable<T>
     public int Count => _count;
     public int TreeHeight => _root?.Height ?? -1;
 
-    private void UpdateHeight(TreeNode<T> node)
-    {
-        if (node is null) return;
-        node.Height = Math.Max(
-                               node.GetLeftChildHeight(),
-                               node.GetRightChildHeight()
-                              ) + 1;
-    }
-
     public void Insert(T value)
     {
         _root = Insert(_root, value);
@@ -58,7 +49,7 @@ public sealed class AvlTree<T> where T : IComparable<T>
             return root;
         }
 
-        UpdateHeight(root);
+        root.UpdateHeight();
 
         var rotationNode = RotationNode(root);
 
@@ -112,7 +103,7 @@ public sealed class AvlTree<T> where T : IComparable<T>
             }
         }
 
-        UpdateHeight(root);
+        root.UpdateHeight();
 
         var rotationNode = RotationNode(root);
 
@@ -173,9 +164,9 @@ public sealed class AvlTree<T> where T : IComparable<T>
         newRoot.Right = root;
         newRoot.Left = middleNode;
 
-        UpdateHeight(root);
-        UpdateHeight(middleNode);
-        UpdateHeight(newRoot);
+        root.UpdateHeight();
+        middleNode.UpdateHeight();
+        newRoot.UpdateHeight();
 
         return newRoot;
     }
@@ -193,9 +184,9 @@ public sealed class AvlTree<T> where T : IComparable<T>
         newRoot.Left = root;
         newRoot.Right = middleNode;
 
-        UpdateHeight(root);
-        UpdateHeight(middleNode);
-        UpdateHeight(newRoot);
+        root.UpdateHeight();
+        middleNode.UpdateHeight();
+        newRoot.UpdateHeight();
 
         return newRoot;
     }
@@ -209,8 +200,8 @@ public sealed class AvlTree<T> where T : IComparable<T>
         root.Right = newRoot.Left;
         newRoot.Left = root;
 
-        UpdateHeight(root);
-        UpdateHeight(newRoot);
+        root.UpdateHeight();
+        newRoot.UpdateHeight();
 
         return newRoot;
     }
@@ -224,8 +215,8 @@ public sealed class AvlTree<T> where T : IComparable<T>
         root.Left = newRoot.Right;
         newRoot.Right = root;
 
-        UpdateHeight(root);
-        UpdateHeight(newRoot);
+        root.UpdateHeight();
+        newRoot.UpdateHeight();
 
         return newRoot;
     }
@@ -278,7 +269,7 @@ public sealed class AvlTree<T> where T : IComparable<T>
         list.Add(root.Value);
     }
 
-    public bool Contains(T value)
+    public bool Search(T value)
     {
         return Search(_root, value);
     }
