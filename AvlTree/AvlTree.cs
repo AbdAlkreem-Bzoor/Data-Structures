@@ -241,6 +241,48 @@ public sealed class AvlTree<T> : IBinarySearchTree<T>
         return newRoot;
     }
 
+    private AvlTreeNode<T> FindNode(T value)
+    {
+        var current = _root;
+
+        while (current is not null)
+        {
+            int compareValue = value.CompareTo(current.Value);
+
+            if (compareValue == 0)
+            {
+                return current;
+            }
+
+            current = compareValue < 0 ? current.Left : current.Right;
+        }
+
+        return default!;
+    }
+
+    public T Get(T value)
+    {
+        return FindNode(value).Value;
+    }
+
+    public bool Update(T value)
+    {
+        var node = FindNode(value);
+
+        if (node is null)
+        {
+            return false;
+        }
+
+        node.Value = value;
+
+        return true;
+    }
+
+    public T Max() => FindMaxNode(_root!).Value ?? default!;
+
+    public T Min() => FindMinNode(_root!).Value ?? default!;
+
     public IEnumerable<T> InOrder()
     {
         var list = new List<T>();
@@ -324,46 +366,4 @@ public sealed class AvlTree<T> : IBinarySearchTree<T>
 
         return list;
     }
-
-    private AvlTreeNode<T> FindNode(T value)
-    {
-        var current = _root;
-
-        while (current is not null)
-        {
-            int compareValue = value.CompareTo(current.Value);
-
-            if (compareValue == 0)
-            {
-                return current;
-            }
-
-            current = compareValue < 0 ? current.Left : current.Right;
-        }
-
-        return default!;
-    }
-
-    public T Get(T value)
-    {
-        return FindNode(value).Value;
-    }
-
-    public bool Update(T value)
-    {
-        var node = FindNode(value);
-
-        if (node is null)
-        {
-            return false;
-        }
-
-        node.Value = value;
-
-        return true;
-    }
-
-    public T Max() => FindMaxNode(_root!).Value ?? default!;
-
-    public T Min() => FindMinNode(_root!).Value ?? default!;
 }

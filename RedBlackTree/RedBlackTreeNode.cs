@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace RedBlackTree;
+﻿namespace RedBlackTree;
 
 internal sealed class RedBlackTreeNode<T>
 {
@@ -11,8 +7,8 @@ internal sealed class RedBlackTreeNode<T>
         Value = value;
         Color = color;
     }
-    public RedBlackTreeNode(T value, Color color, 
-                    RedBlackTreeNode<T> left, RedBlackTreeNode<T> right, 
+    public RedBlackTreeNode(T value, Color color,
+                    RedBlackTreeNode<T> left, RedBlackTreeNode<T> right,
                     RedBlackTreeNode<T> parent)
     {
         Value = value;
