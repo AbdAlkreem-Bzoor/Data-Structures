@@ -72,11 +72,11 @@ public sealed class RedBlackTree<T> : IBinarySearchTree<T>
         return true;
     }
 
-    private void FixInsertion(RedBlackTreeNode<T> insertedNode)
+    private void FixInsertion(RedBlackTreeNode<T> fixupNode)
     {
-        while (insertedNode.Parent.Color == Color.Red)
+        while (fixupNode.Parent.Color == Color.Red)
         {
-            RedBlackTreeNode<T> parent = insertedNode.Parent;
+            RedBlackTreeNode<T> parent = fixupNode.Parent;
             RedBlackTreeNode<T> grandParent = parent.Parent;
 
             if (parent == grandParent.Left)
@@ -88,15 +88,15 @@ public sealed class RedBlackTree<T> : IBinarySearchTree<T>
                     parent.Color = Color.Black;
                     uncle.Color = Color.Black;
                     grandParent.Color = Color.Red;
-                    insertedNode = grandParent;
+                    fixupNode = grandParent;
                 }
                 else
                 {
-                    if (insertedNode == parent.Right)
+                    if (fixupNode == parent.Right)
                     {
-                        insertedNode = parent;
-                        LeftRotation(insertedNode);
-                        parent = insertedNode.Parent;
+                        fixupNode = parent;
+                        LeftRotation(fixupNode);
+                        parent = fixupNode.Parent;
                         grandParent = parent.Parent;
                     }
 
@@ -114,15 +114,15 @@ public sealed class RedBlackTree<T> : IBinarySearchTree<T>
                     parent.Color = Color.Black;
                     uncle.Color = Color.Black;
                     grandParent.Color = Color.Red;
-                    insertedNode = grandParent;
+                    fixupNode = grandParent;
                 }
                 else
                 {
-                    if (insertedNode == parent.Left)
+                    if (fixupNode == parent.Left)
                     {
-                        insertedNode = parent;
-                        RightRotation(insertedNode);
-                        parent = insertedNode.Parent;
+                        fixupNode = parent;
+                        RightRotation(fixupNode);
+                        parent = fixupNode.Parent;
                         grandParent = parent.Parent;
                     }
 
@@ -194,6 +194,84 @@ public sealed class RedBlackTree<T> : IBinarySearchTree<T>
             FixDeletion(nodeThatMovedUp);
     }
 
+    private void FixDeletion(RedBlackTreeNode<T> fixupNode)
+    {
+        while (fixupNode != _root && fixupNode.Color == Color.Black)
+        {
+            RedBlackTreeNode<T> parent = fixupNode.Parent;
+
+            if (fixupNode == parent.Left)
+            {
+                RedBlackTreeNode<T> sibling = parent.Right;
+
+                if (sibling.Color == Color.Red)
+                {
+                    sibling.Color = Color.Black;
+                    parent.Color = Color.Red;
+                    LeftRotation(parent);
+                    sibling = parent.Right;
+                }
+
+                if (sibling.Left.Color == Color.Black && sibling.Right.Color == Color.Black)
+                {
+                    sibling.Color = Color.Red;
+                    fixupNode = parent;
+                }
+                else
+                {
+                    if (sibling.Right.Color == Color.Black)
+                    {
+                        sibling.Left.Color = Color.Black;
+                        sibling.Color = Color.Red;
+                        RightRotation(sibling);
+                        sibling = parent.Right;
+                    }
+
+                    sibling.Color = parent.Color;
+                    parent.Color = Color.Black;
+                    sibling.Right.Color = Color.Black;
+                    LeftRotation(parent);
+                    fixupNode = _root;
+                }
+            }
+            else
+            {
+                RedBlackTreeNode<T> sibling = parent.Left;
+
+                if (sibling.Color == Color.Red)
+                {
+                    sibling.Color = Color.Black;
+                    parent.Color = Color.Red;
+                    RightRotation(parent);
+                    sibling = parent.Left;
+                }
+
+                if (sibling.Right.Color == Color.Black && sibling.Left.Color == Color.Black)
+                {
+                    sibling.Color = Color.Red;
+                    fixupNode = parent;
+                }
+                else
+                {
+                    if (sibling.Left.Color == Color.Black)
+                    {
+                        sibling.Right.Color = Color.Black;
+                        sibling.Color = Color.Red;
+                        LeftRotation(sibling);
+                        sibling = parent.Left;
+                    }
+
+                    sibling.Color = parent.Color;
+                    parent.Color = Color.Black;
+                    sibling.Left.Color = Color.Black;
+                    RightRotation(parent);
+                    fixupNode = _root;
+                }
+            }
+        }
+
+        fixupNode.Color = Color.Black;
+    }
 
     private RedBlackTreeNode<T> FindNode(T value)
     {
@@ -268,85 +346,6 @@ public sealed class RedBlackTree<T> : IBinarySearchTree<T>
         node.Parent = newParent;
     }
 
-    private void FixDeletion(RedBlackTreeNode<T> nodeWithExtraBlack)
-    {
-        while (nodeWithExtraBlack != _root && nodeWithExtraBlack.Color == Color.Black)
-        {
-            RedBlackTreeNode<T> parent = nodeWithExtraBlack.Parent;
-
-            if (nodeWithExtraBlack == parent.Left)
-            {
-                RedBlackTreeNode<T> sibling = parent.Right;
-
-                if (sibling.Color == Color.Red)
-                {
-                    sibling.Color = Color.Black;
-                    parent.Color = Color.Red;
-                    LeftRotation(parent);
-                    sibling = parent.Right;
-                }
-
-                if (sibling.Left.Color == Color.Black && sibling.Right.Color == Color.Black)
-                {
-                    sibling.Color = Color.Red;
-                    nodeWithExtraBlack = parent;
-                }
-                else
-                {
-                    if (sibling.Right.Color == Color.Black)
-                    {
-                        sibling.Left.Color = Color.Black;
-                        sibling.Color = Color.Red;
-                        RightRotation(sibling);
-                        sibling = parent.Right;
-                    }
-
-                    sibling.Color = parent.Color;
-                    parent.Color = Color.Black;
-                    sibling.Right.Color = Color.Black;
-                    LeftRotation(parent);
-                    nodeWithExtraBlack = _root;
-                }
-            }
-            else
-            {
-                RedBlackTreeNode<T> sibling = parent.Left;
-
-                if (sibling.Color == Color.Red)
-                {
-                    sibling.Color = Color.Black;
-                    parent.Color = Color.Red;
-                    RightRotation(parent);
-                    sibling = parent.Left;
-                }
-
-                if (sibling.Right.Color == Color.Black && sibling.Left.Color == Color.Black)
-                {
-                    sibling.Color = Color.Red;
-                    nodeWithExtraBlack = parent;
-                }
-                else
-                {
-                    if (sibling.Left.Color == Color.Black)
-                    {
-                        sibling.Right.Color = Color.Black;
-                        sibling.Color = Color.Red;
-                        LeftRotation(sibling);
-                        sibling = parent.Left;
-                    }
-
-                    sibling.Color = parent.Color;
-                    parent.Color = Color.Black;
-                    sibling.Left.Color = Color.Black;
-                    RightRotation(parent);
-                    nodeWithExtraBlack = _root;
-                }
-            }
-        }
-
-        nodeWithExtraBlack.Color = Color.Black;
-    }
-
     private void ReplaceSubtree(RedBlackTreeNode<T> oldSubtreeRoot, RedBlackTreeNode<T> newSubtreeRoot)
     {
         if (oldSubtreeRoot.Parent == _nil)
@@ -384,6 +383,29 @@ public sealed class RedBlackTree<T> : IBinarySearchTree<T>
         }
         return current;
     }
+
+    public T Get(T value)
+    {
+        return FindNode(value).Value;
+    }
+
+    public bool Update(T value)
+    {
+        var node = FindNode(value);
+
+        if (node is null)
+        {
+            return false;
+        }
+
+        node.Value = value;
+
+        return true;
+    }
+
+    public T Max() => FindMaxNode(_root!).Value ?? default!;
+
+    public T Min() => FindMinNode(_root!).Value ?? default!;
 
     public IEnumerable<T> InOrder()
     {
@@ -466,27 +488,4 @@ public sealed class RedBlackTree<T> : IBinarySearchTree<T>
 
         return list;
     }
-
-    public T Get(T value)
-    {
-        return FindNode(value).Value;
-    }
-
-    public bool Update(T value)
-    {
-        var node = FindNode(value);
-
-        if (node is null)
-        {
-            return false;
-        }
-
-        node.Value = value;
-
-        return true;
-    }
-
-    public T Max() => FindMaxNode(_root!).Value ?? default!;
-
-    public T Min() => FindMinNode(_root!).Value ?? default!;
 }
