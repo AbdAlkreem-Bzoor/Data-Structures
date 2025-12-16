@@ -1,20 +1,11 @@
 ﻿namespace Deque;
-public class Deque<T>
+
+public sealed class Deque<T>
 {
     private T[] _list;
-    private int _capacity = 9;
+    private int _capacity = 10;
     private int _headIndex;
     private int _tailIndex;
-
-    public int Count
-    {
-        get
-        {
-            int size = _tailIndex - _headIndex + 1;
-
-            return size == -1 ? 0 : size;
-        }
-    }
 
     public Deque()
     {
@@ -26,6 +17,7 @@ public class Deque<T>
     public Deque(int capacity) : this()
     {
         _capacity = capacity;
+        _list = new T[_capacity];
     }
 
     public Deque(IEnumerable<T> list)
@@ -34,6 +26,16 @@ public class Deque<T>
         _capacity = _list.Length;
         _headIndex = 0;
         _tailIndex = _capacity - 1;
+    }
+
+    public int Count
+    {
+        get
+        {
+            int size = _tailIndex - _headIndex + 1;
+
+            return size == -1 ? 0 : size;
+        }
     }
 
     public void AddFirst(T item)
@@ -54,6 +56,7 @@ public class Deque<T>
     {
         if (_headIndex > _tailIndex)
             throw new IndexOutOfRangeException("There is no items in the collection");
+
         if (_headIndex == _tailIndex)
             _tailIndex--;
 
@@ -78,6 +81,7 @@ public class Deque<T>
     {
         if (_headIndex > _tailIndex)
             throw new IndexOutOfRangeException("There is no items in the collection");
+
         if (_headIndex == _tailIndex)
             _headIndex++;
 
@@ -106,12 +110,13 @@ public class Deque<T>
             _list[index + _headIndex] = value;
         }
     }
+
     private void ResizeList()
     {
         int count = _capacity;
         int newHead = _headIndex + count;
         int newTail = _tailIndex + count;
-        _capacity *= 3;
+        _capacity *= 2;
 
         var temp = new T[_capacity];
         for (int i = 0; i < Count; i++)
