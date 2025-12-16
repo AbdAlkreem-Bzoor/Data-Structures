@@ -1,267 +1,282 @@
 ﻿using System.Text;
 
-namespace LinkedList
+namespace LinkedList;
+
+public sealed class LinkedList<T>
 {
-    internal class LinkedList<T> where T : IComparable<T>
+    private Node<T>? _head = null;
+    private Node<T>? _tail = null;
+
+    public LinkedList() { }
+
+    public LinkedList(IEnumerable<T> values)
     {
-        private Node<T>? head = null;
-        private Node<T>? tail = null;
-        public int Count { get; private set; }
-        public LinkedList() { }
-        public T? First { get { return head is null ? default : head.Value; } }
-        public T? Last { get { return tail is null ? default : tail.Value; } }
-        private (Node<T>? current, Node<T>? previous) GetNodeAt(int index)
+        foreach (var value in values)
         {
-            var current = head;
-            Node<T>? previous = null;
-            while (index-- > 0)
-            {
-                previous = current;
-                current = current?.Next;
-            }
-            return (current, previous);
+            AddLast(value);
         }
-        public void Add(T item)
+    }
+
+    public int Count { get; private set; }
+
+    public T? First => _head is null ? default : _head.Value;
+
+    public T? Last => _tail is null ? default : _tail.Value;
+
+    private (Node<T>? current, Node<T>? previous) GetNodeAt(int index)
+    {
+        var current = _head;
+        Node<T>? previous = null;
+        while (index-- > 0)
         {
-            if (tail is null)
-            {
-                head = tail = new Node<T>(item);
-            }
-            else
-            {
-                tail.Next = new Node<T>(item);
-                tail = tail.Next;
-            }
+            previous = current;
+            current = current?.Next;
+        }
+        return (current, previous);
+    }
+
+    public void AddLast(T value)
+    {
+        if (_tail is null)
+        {
+            _head = _tail = new Node<T>(value);
+        }
+        else
+        {
+            _tail.Next = new Node<T>(value);
+            _tail = _tail.Next;
+        }
+        Count++;
+    }
+
+    public void AddFirst(T value)
+    {
+        var newNode = new Node<T>(value, _head);
+        _head = newNode;
+        Count++;
+    }
+
+    public void AddAt(int index, T value)
+    {
+        if (index < 0 || index > Count)
+            throw new ArgumentOutOfRangeException($"index out of range the index should be between 0 & {Count}");
+
+        if (index == 0)
+        {
+            AddFirst(value);
+        }
+        else if (index == Count)
+        {
+            AddLast(value);
+        }
+        else
+        {
+            var (currentNode, previousNode) = GetNodeAt(index);
+
+            var newNode = new Node<T>(value, currentNode);
+            previousNode!.Next = newNode;
             Count++;
         }
-        public void AddAt(int index, T item)
+    }
+
+    private void RemoveFirst()
+    {
+        if (Count == 1)
         {
-            if (index < 0 || index > Count)
-                throw new ArgumentOutOfRangeException($"index out of range the index should be between 0 & {Count}");
-            if (index == 0)
-            {
-                var newNode = new Node<T>(item, head);
-                head = newNode;
-                Count++;
-            }
-            else if (index == Count)
-            {
-                Add(item);
-            }
-            else
-            {
-                var node = GetNodeAt(index);
-                var newNode = new Node<T>(item, node.current);
-                node.previous.Next = newNode;
-                Count++;
-            }
+            _head = _tail = null;
         }
-        private void RemoveFirst()
+        else
         {
-            if (Count == 1)
-            {
-                head = tail = null;
-            }
-            else
-            {
-                head = head?.Next;
-            }
+            _head = _head!.Next;
+        }
+        Count--;
+    }
+
+    private void RemoveLast()
+    {
+        if (Count == 1)
+        {
+            _head = _tail = null;
+        }
+        else
+        {
+            var (currentNode, previousNode) = GetNodeAt(Count - 1);
+
+            previousNode!.Next = null;
+            _tail = previousNode;
+        }
+        Count--;
+    }
+
+    public void RemoveAt(int index)
+    {
+        if (index < 0 || index >= Count)
+            throw new ArgumentOutOfRangeException($"index is not in the linkedlist size range, should be from 0 to {Count - 1}");
+
+        if (index == 0)
+        {
+            RemoveFirst();
+        }
+        else if (index == Count - 1)
+        {
+            RemoveLast();
+        }
+        else
+        {
+            var (currentNode, previousNode) = GetNodeAt(index);
+
+            previousNode!.Next = currentNode?.Next;
+            currentNode!.Next = null;
             Count--;
         }
-        private void RemoveLast()
+    }
+
+    public bool Contains(T value)
+    {
+        var temp = _head;
+        while (temp is not null)
         {
-            if (Count == 1)
+            if (temp.Value.Equals(value))
+                return true;
+            temp = temp.Next;
+        }
+        return false;
+    }
+
+    private void SwapNeighbours(
+        Node<T> leftNodePrevious, Node<T> leftNode,
+        Node<T> rightNodePrevious, Node<T> rightNode,
+        int left, int right)
+    {
+        if (left == 0)
+        {
+            leftNode.Next = rightNode.Next;
+            rightNode.Next = leftNode;
+
+            _head = rightNode;
+        }
+        else if (right == Count - 1)
+        {
+            leftNodePrevious.Next = rightNode;
+            rightNode.Next = leftNode;
+            leftNode.Next = rightNode.Next;
+
+            _tail = leftNode;
+        }
+        else
+        {
+            leftNodePrevious.Next = rightNode;
+            rightNode.Next = leftNode;
+            leftNode.Next = rightNode.Next;
+        }
+    }
+
+    private void SwapInterval(
+        Node<T> leftNodePrevious, Node<T> leftNode,
+        Node<T> rightNodePrevious, Node<T> rightNode,
+        int left, int right)
+    {
+        if (left == 0)
+        {
+            if (right == Count - 1)
             {
-                RemoveFirst();
+                rightNode.Next = leftNode.Next;
+
+                rightNodePrevious.Next = leftNode;
+                leftNode.Next = rightNode.Next;
+
+                _head = rightNode;
+                _tail = leftNode;
             }
             else
             {
-                var node = GetNodeAt(Count - 1);
-                node.previous.Next = null;
-                tail = node.previous;
-                Count--;
+                rightNode.Next = leftNode.Next;
+
+                rightNodePrevious.Next = leftNode;
+                leftNode.Next = rightNode.Next;
+
+                _head = rightNode;
             }
         }
-        public bool Remove(T item)
+        else if (right == Count - 1)
         {
-            int index = 0;
-            var temp = head;
-            while (temp is not null)
-            {
-                if (temp.Value.Equals(item))
-                {
-                    RemoveAt(index);
-                    return true;
-                }
-                temp = temp.Next;
-                index++;
-            }
-            return false;
+            rightNode.Next = leftNode.Next;
+            leftNodePrevious.Next = rightNode;
+
+            rightNodePrevious.Next = leftNode;
+            leftNode.Next = rightNode.Next;
+
+            _tail = leftNode;
         }
-        public void RemoveAt(int index)
+        else
         {
-            if (index < 0 || index >= Count)
-                throw new ArgumentOutOfRangeException($"index is not in the linkedlist size range, should be from 0 to {Count - 1}");
-            if (index == 0)
-            {
-                RemoveFirst();
-            }
-            else if (index == Count - 1)
-            {
-                RemoveLast();
-            }
-            else
-            {
-                var node = GetNodeAt(index);
-                node.previous.Next = node.current?.Next;
-                node.current.Next = null;
-                Count--;
-            }
+            leftNodePrevious.Next = rightNode;
+            rightNode.Next = leftNode.Next;
+
+            rightNodePrevious.Next = leftNode;
+            leftNode.Next = rightNode.Next;
         }
-        public bool Contains(T item)
+    }
+
+    public void Swap(int left, int right)
+    {
+        if (left < 0 || right < 0 || left >= Count || right >= Count)
+            throw new ArgumentOutOfRangeException("index is not in the linkedlist size range");
+
+        if (left > right)
         {
-            var temp = head;
-            while (temp is not null)
-            {
-                if (temp.Value.Equals(item))
-                    return true;
-                temp = temp.Next;
-            }
-            return false;
+            int temp = left;
+            left = right;
+            right = temp;
         }
-        private void SwapWhenR_LEqualOne((Node<T>? current, Node<T>? previous) nodeL,
-            (Node<T>? current, Node<T>? previous) nodeR,
-            Node<T>? nextL, Node<T>? nextR, int l, int r)
+
+        if (Count == 2)
         {
-            if (l == 0)
-            {
-                nodeL.current.Next = nextR;
-                nodeR.current.Next = nodeL.current;
+            _tail!.Next = _head;
+            _head!.Next = null;
 
-                head = nodeR.current;
-            }
-            else if (r == Count - 1)
-            {
-                nodeL.previous.Next = nodeR.current;
-                nodeR.current.Next = nodeL.current;
-                nodeL.current.Next = nextR;
+            (_head, _tail) = (_tail, _head);
 
-                tail = nodeL.current;
-            }
-            else
-            {
-                nodeL.previous.Next = nodeR.current;
-                nodeR.current.Next = nodeL.current;
-                nodeL.current.Next = nextR;
-            }
+            return;
         }
+        var (leftNode, leftNodePrevious) = GetNodeAt(left);
+        var (rightNode, rightNodePrevious) = GetNodeAt(right);
 
-        private void SwapRL((Node<T>? current, Node<T>? previous) nodeL,
-            (Node<T>? current, Node<T>? previous) nodeR,
-            Node<T>? nextL, Node<T>? nextR, int l, int r)
+        if (right - left == 1)
         {
-            if (l == 0)
-            {
-                if (r == Count - 1)
-                {
-                    nodeR.current.Next = nextL;
-
-                    nodeR.previous.Next = nodeL.current;
-                    nodeL.current.Next = nextR;
-
-                    head = nodeR.current;
-                    tail = nodeL.current;
-                }
-                else
-                {
-                    nodeR.current.Next = nextL;
-
-                    nodeR.previous.Next = nodeL.current;
-                    nodeL.current.Next = nextR;
-
-                    head = nodeR.current;
-                }
-            }
-            else if (r == Count - 1)
-            {
-                nodeR.current.Next = nextL;
-                nodeL.previous.Next = nodeR.current;
-
-                nodeR.previous.Next = nodeL.current;
-                nodeL.current.Next = nextR;
-
-                tail = nodeL.current;
-            }
-            else
-            {
-                nodeL.previous.Next = nodeR.current;
-                nodeR.current.Next = nextL;
-
-                nodeR.previous.Next = nodeL.current;
-                nodeL.current.Next = nextR;
-            }
+            SwapNeighbours(leftNodePrevious!, leftNode!, rightNodePrevious!, rightNode!, left, right);
         }
-        public void Swap(int l, int r)
+        else
         {
-            if (l < 0 || r < 0 || l >= Count || r >= Count)
-                throw new ArgumentOutOfRangeException("index is not in the linkedlist size range");
-            if (l > r)
-            {
-                int temp = l;
-                l = r;
-                r = temp;
-            }
-            if (Count == 2)
-            {
-                tail.Next = head;
-                head.Next = null;
-
-                var temp = tail;
-                tail = head;
-                head = temp;
-
-                return;
-            }
-            var nodeL = GetNodeAt(l);
-            var nodeR = GetNodeAt(r);
-
-            var nextL = nodeL.current?.Next;
-            var nextR = nodeR.current?.Next;
-
-            if (r - l == 1)
-            {
-                SwapWhenR_LEqualOne(nodeL, nodeR, nextL, nextR, l, r);
-            }
-            else
-            {
-                SwapRL(nodeL, nodeR, nextL, nextR, l, r);
-            }
+            SwapInterval(leftNodePrevious!, leftNode!, rightNodePrevious!, rightNode!, left, right);
         }
-        public void Reverse()
+    }
+
+    public void Reverse()
+    {
+        Node<T>? previous = null, current = _head, next;
+        while (current is not null)
         {
-            Node<T>? previous = null, current = head, next;
-            while (current is not null)
-            {
-                next = current.Next;
-                current.Next = previous;
-                previous = current;
-                current = next;
-            }
+            next = current.Next;
+            current.Next = previous;
+            previous = current;
+            current = next;
+        }
 
-            current = head;
-            head = tail;
-            tail = current;
-        }
-        public override string ToString()
+        current = _head;
+        _head = _tail;
+        _tail = current;
+    }
+
+    public override string ToString()
+    {
+        StringBuilder sb = new StringBuilder();
+        var temp = _head;
+        while (temp is not null)
         {
-            StringBuilder sb = new StringBuilder();
-            var temp = head;
-            while (temp is not null)
-            {
-                sb.Append($"{temp.Value} ");
-                temp = temp.Next;
-            }
-            return sb.ToString();
+            sb.Append($"{temp.Value} ");
+            temp = temp.Next;
         }
+        return sb.ToString();
     }
 }

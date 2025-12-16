@@ -2,26 +2,25 @@
 
 namespace LinkedList;
 
-public class Node<T>
+public sealed class Node<T>
 {
-    public T? Value { get; set; } = default;
+    public T Value { get; set; } = default!;
     public Node<T>? Next { get; set; } = null;
     public Node() { }
-    public Node(T? value)
+    public Node(T value)
     {
         this.Value = value;
     }
-    public Node(T? value, Node<T>? next)
+    public Node(T value, Node<T>? next)
     {
         Value = value;
         Next = next;
     }
     public override bool Equals(object? obj)
     {
-        var other = obj as Node<T>;
-        if (other is null || this is null)
+        if (obj is not Node<T> other || this is null)
             return false;
-        return Value.Equals(other.Value);
+        return Value!.Equals(other.Value);
     }
     public override int GetHashCode()
     {
