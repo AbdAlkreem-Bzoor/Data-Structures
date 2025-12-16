@@ -1,14 +1,27 @@
-﻿using SortedDictionary.Exceptions;
+﻿using AvlTree;
+using Shared;
+using Shared.Abstractions;
+using SortedDictionary.Exceptions;
 
 namespace SortedDictionary;
 
-public sealed class SortedDictionary<TKey, TValue> where TKey : IComparable<TKey>
-{
-    private TreeNode<TKey, TValue>? _root;
-    private int _count;
-    public SortedDictionary() { }
 
-    public SortedDictionary(IEnumerable<KeyValuePair<TKey, TValue>> pairs)
+public sealed class SortedDictionary<TKey, TValue>
+    where TKey : IComparable<TKey>
+{
+    private IBinarySearchTree<Pair<TKey, TValue>> _tree;
+
+    public SortedDictionary()
+    {
+        _tree = new AvlTree<Pair<TKey, TValue>>();
+    }
+
+    public SortedDictionary(IBinarySearchTree<Pair<TKey, TValue>> tree)
+    {
+        _tree = tree;
+    }
+
+    public SortedDictionary(IEnumerable<KeyValuePair<TKey, TValue>> pairs) : this()
     {
         foreach (var pair in pairs)
         {
@@ -16,7 +29,7 @@ public sealed class SortedDictionary<TKey, TValue> where TKey : IComparable<TKey
         }
     }
 
-    public SortedDictionary(IEnumerable<(TKey key, TValue value)> pairs)
+    public SortedDictionary(IEnumerable<(TKey key, TValue value)> pairs) : this()
     {
         foreach (var (key, value) in pairs)
         {
@@ -24,338 +37,85 @@ public sealed class SortedDictionary<TKey, TValue> where TKey : IComparable<TKey
         }
     }
 
-    public int Count => _count;
-    public int TreeHeight => _root?.Height ?? -1;
+    public int Count => _tree.Count;
 
     public void Add(TKey key, TValue value)
     {
-        _root = Add(_root, key, value, true);
+        var result = _tree.Insert(new Pair<TKey, TValue>(key, value));
+        if (!result)
+        {
+            throw new FoundKeyException("Key already exist");
+        }
     }
 
     public void TryAdd(TKey key, TValue value)
     {
-        _root = Add(_root, key, value);
-    }
-
-    private TreeNode<TKey, TValue> Add(TreeNode<TKey, TValue>? root, TKey key, TValue value, bool throwException = false)
-    {
-        if (root is null)
-        {
-            _count++;
-            root = new TreeNode<TKey, TValue>(key, value);
-            return root;
-        }
-
-        int compareValue = key.CompareTo(root.Key);
-        if (compareValue < 0)
-        {
-            root.Left = Add(root.Left, key, value, throwException);
-        }
-        else if (compareValue > 0)
-        {
-            root.Right = Add(root.Right, key, value, throwException);
-        }
-        else
-        {
-            if (throwException)
-                throw new FoundKeyException("Key already exist in the Dictionary");
-
-            return root;
-        }
-
-        root.UpdateHeight();
-
-        var rotationNode = RotationNode(root);
-
-        if (rotationNode is not null)
-        {
-            return rotationNode;
-        }
-
-        return root;
+        _tree.Insert(new Pair<TKey, TValue>(key, value));
     }
 
     public bool Remove(TKey key)
     {
-        var previousCount = _count;
-
-        _root = Remove(_root, key);
-
-        return previousCount == _count + 1;
-    }
-
-    private TreeNode<TKey, TValue>? Remove(TreeNode<TKey, TValue>? root, TKey key)
-    {
-        if (root is null) return root;
-
-        int compareValue = key.CompareTo(root.Key);
-
-        if (compareValue < 0)
-        {
-            root.Left = Remove(root.Left, key);
-        }
-        else if (compareValue > 0)
-        {
-            root.Right = Remove(root.Right, key);
-        }
-        else
-        {
-            _count--;
-            if (root.Left is null && root.Right is null)
-            {
-                return null;
-            }
-            else if (root.Left is null)
-            {
-                return root.Right;
-            }
-            else if (root.Right is null)
-            {
-                return root.Left;
-            }
-            else
-            {
-                var minNode = FindMinNode(root.Right);
-                root.Value = minNode.Value;
-                root.Right = Remove(root.Right, minNode.Key);
-            }
-        }
-
-        root.UpdateHeight();
-
-        var rotationNode = RotationNode(root);
-
-        if (rotationNode is not null)
-        {
-            return rotationNode;
-        }
-
-        return root;
-    }
-
-    private TreeNode<TKey, TValue>? RotationNode(TreeNode<TKey, TValue> root)
-    {
-        int rootHeightBalance = root.GetBalance();
-        int leftChildHeightBalance = root.Left?.GetBalance() ?? -1;
-        int rightChildHeightBalance = root.Right?.GetBalance() ?? -1;
-
-        if (rootHeightBalance == -2 && rightChildHeightBalance == -1)              // RR case
-        {
-            return RightRotation(root);
-        }
-        else if (rootHeightBalance == 2 && leftChildHeightBalance == 1)           // LL case
-        {
-            return LeftRotation(root);
-        }
-        else if (rootHeightBalance == -2 && rightChildHeightBalance == 1)          // RL case
-        {
-            return RightLeftRotation(root);
-        }
-        else if (rootHeightBalance == 2 && leftChildHeightBalance == -1)          // LR case
-        {
-            return LeftRightRotation(root);
-        }
-
-        return null;
-    }
-
-    private TreeNode<TKey, TValue> FindMinNode(TreeNode<TKey, TValue> root)
-    {
-        TreeNode<TKey, TValue> temp = root;
-        while (temp.Left is not null)
-        {
-            temp = temp.Left;
-        }
-        return temp;
-    }
-
-    private TreeNode<TKey, TValue> FindMaxNode(TreeNode<TKey, TValue> root)
-    {
-        TreeNode<TKey, TValue> temp = root;
-        while (temp.Right is not null)
-        {
-            temp = temp.Right;
-        }
-        return temp;
-    }
-
-    private TreeNode<TKey, TValue> LeftRightRotation(TreeNode<TKey, TValue> root)
-    {
-        if (root.Left is null || root.Left.Right is null)
-            throw new InvalidOperationException("Invalid AVL rotation: null child.");
-
-        TreeNode<TKey, TValue> middleNode = root.Left;
-        TreeNode<TKey, TValue> newRoot = root.Left.Right;
-
-        root.Left = newRoot.Right;
-        middleNode.Right = newRoot.Left;
-        newRoot.Right = root;
-        newRoot.Left = middleNode;
-
-        root.UpdateHeight();
-        middleNode.UpdateHeight();
-        newRoot.UpdateHeight();
-
-        return newRoot;
-    }
-
-    private TreeNode<TKey, TValue> RightLeftRotation(TreeNode<TKey, TValue> root)
-    {
-        if (root.Right is null || root.Right.Left is null)
-            throw new InvalidOperationException("Invalid AVL rotation: null child.");
-
-        TreeNode<TKey, TValue> middleNode = root.Right;
-        TreeNode<TKey, TValue> newRoot = root.Right.Left;
-
-        root.Right = newRoot.Left;
-        middleNode.Left = newRoot.Right;
-        newRoot.Left = root;
-        newRoot.Right = middleNode;
-
-        root.UpdateHeight();
-        middleNode.UpdateHeight();
-        newRoot.UpdateHeight();
-
-        return newRoot;
-    }
-
-    private TreeNode<TKey, TValue> RightRotation(TreeNode<TKey, TValue> root)
-    {
-        if (root.Right is null)
-            throw new InvalidOperationException("Invalid AVL rotation: null child.");
-
-        TreeNode<TKey, TValue> newRoot = root.Right;
-        root.Right = newRoot.Left;
-        newRoot.Left = root;
-
-        root.UpdateHeight();
-        newRoot.UpdateHeight();
-
-        return newRoot;
-    }
-
-    private TreeNode<TKey, TValue> LeftRotation(TreeNode<TKey, TValue> root)
-    {
-        if (root.Left is null)
-            throw new InvalidOperationException("Invalid AVL rotation: null child.");
-
-        TreeNode<TKey, TValue> newRoot = root.Left;
-        root.Left = newRoot.Right;
-        newRoot.Right = root;
-
-        root.UpdateHeight();
-        newRoot.UpdateHeight();
-
-        return newRoot;
+        return _tree.Delete(new Pair<TKey, TValue>(key, default!));
     }
 
     public bool ContainsKey(TKey key)
     {
-        return Search(_root, key);
+        return _tree.Search(new Pair<TKey, TValue>(key, default!));
     }
 
-    private bool Search(TreeNode<TKey, TValue>? root, TKey key)
+    public TValue GetValue(TKey key)
     {
-        if (root is null) return false;
+        var value = _tree.Get(new Pair<TKey, TValue>(key, default!)).Value;
 
-        int compareValue = key.CompareTo(root.Key);
-
-        if (compareValue == 0) return true;
-
-        return compareValue < 0 ? Search(root.Left, key) : Search(root.Right, key);
-    }
-
-    public TValue? GetValue(TKey key)
-    {
-        return GetValue(_root, key);
-    }
-
-    private TValue? GetValue(TreeNode<TKey, TValue>? root, TKey key)
-    {
-        if (root is null)
-            throw new NotFoundKeyException("Key not found in the Dictionary");
-
-        int compareValue = key.CompareTo(root.Key);
-
-        if (compareValue == 0) return root.Value;
-
-        return compareValue < 0 ? GetValue(root.Left, key) : GetValue(root.Right, key);
+        return value is null ? throw new KeyNotFoundException("Key not found") : value;
     }
 
     public bool TryGetValue(TKey key, out TValue? result)
     {
-        return TryGetValue(_root, key, out result);
+        result = _tree.Get(new Pair<TKey, TValue>(key, default!)).Value;
+
+        return result is not null;
     }
 
-    private bool TryGetValue(TreeNode<TKey, TValue>? root, TKey key, out TValue? result)
-    {
-        if (root is null)
-        {
-            result = default;
-            return false;
-        }
-
-        int compareValue = key.CompareTo(root.Key);
-
-        if (compareValue == 0)
-        {
-            result = root.Value;
-            return true;
-        }
-
-        return compareValue < 0 ? TryGetValue(root.Left, key, out result) : TryGetValue(root.Right, key, out result);
-    }
-
-    public TValue? this[TKey key]
+    public TValue this[TKey key]
     {
         get
         {
-            return GetValue(_root, key);
+            return GetValue(key);
         }
         set
         {
-            UpdateKey(_root, key, value);
+            UpdateKey(key, value);
         }
     }
 
-    private void UpdateKey(TreeNode<TKey, TValue>? root, TKey key, TValue? value)
+    public void UpdateKey(TKey key, TValue value)
     {
-        if (root is null)
-            throw new NotFoundKeyException("Key not found in the Dictionary");
-
-        int compareValue = key.CompareTo(root.Key);
-
-        if (compareValue == 0)
-        {
-            root.Value = value;
-            return;
-        }
-
-        if (compareValue < 0)
-            UpdateKey(root.Left, key, value);
-        else
-            UpdateKey(root.Right, key, value);
+        _tree.Update(new Pair<TKey, TValue>(key, value));
     }
 
-    public KeyValuePair<TKey, TValue?> Min()
+    public KeyValuePair<TKey, TValue> Min()
     {
-        if (_root is null)
+        if (_tree.Count == 0)
             throw new EmptyDictionaryException("Dictionary is empty");
 
-        var node = FindMinNode(_root);
+        var node = _tree.Min();
 
-        return new KeyValuePair<TKey, TValue?>(node.Key, node.Value);
+        return new KeyValuePair<TKey, TValue>(node.Key, node.Value);
     }
 
-    public KeyValuePair<TKey, TValue?> Max()
+    public KeyValuePair<TKey, TValue> Max()
     {
-        if (_root is null)
+        if (_tree.Count == 0)
             throw new EmptyDictionaryException("Dictionary is empty");
 
-        var node = FindMaxNode(_root);
+        var node = _tree.Max();
 
-        return new KeyValuePair<TKey, TValue?>(node.Key, node.Value);
+        return new KeyValuePair<TKey, TValue>(node.Key, node.Value);
     }
+
+    public IList<KeyValuePair<TKey, TValue>> Pairs =>
+        _tree.InOrder().Select(pair => new KeyValuePair<TKey, TValue>(pair.Key, pair.Value)).ToList();
 }
 
 

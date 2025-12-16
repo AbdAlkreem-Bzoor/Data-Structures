@@ -1,10 +1,12 @@
 ﻿namespace Shared.Abstractions;
 
-public interface ITree<T> where T : IComparable<T>
+public interface ITree<T>
 {
     int Count { get; }
     int TreeHeight { get; }
-    void Insert(T value);
-    void Delete(T value);
+    bool Insert(T value);
+    bool Delete(T value);
+    bool Update(T value);
+    T Get(T value);
     bool Search(T value);
 }

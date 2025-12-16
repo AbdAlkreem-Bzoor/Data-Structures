@@ -1,16 +1,16 @@
 ﻿namespace AvlTree;
 
-public sealed class TreeNode<T>
+internal sealed class AvlTreeNode<T>
 {
     private int _height;
-    public TreeNode() { }
+    public AvlTreeNode() { }
 
-    public TreeNode(T value)
+    public AvlTreeNode(T value)
     {
         Value = value;
     }
 
-    public TreeNode(T value, TreeNode<T>? left, TreeNode<T>? right)
+    public AvlTreeNode(T value, AvlTreeNode<T>? left, AvlTreeNode<T>? right)
     {
         Value = value;
         Left = left;
@@ -19,8 +19,8 @@ public sealed class TreeNode<T>
     }
 
     public T Value { get; set; } = default!;
-    public TreeNode<T>? Left { get; set; }
-    public TreeNode<T>? Right { get; set; }
+    public AvlTreeNode<T>? Left { get; set; }
+    public AvlTreeNode<T>? Right { get; set; }
     public int Height
     {
         get
@@ -40,7 +40,7 @@ public sealed class TreeNode<T>
 
     public void UpdateHeight() => Height = Math.Max(GetHeight(Left), GetHeight(Right)) + 1;
 
-    private static int GetHeight(TreeNode<T>? node)
+    private static int GetHeight(AvlTreeNode<T>? node)
     {
         return node is null ? -1 : node.Height;
     }
