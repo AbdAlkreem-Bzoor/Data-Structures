@@ -1,13 +1,16 @@
-﻿namespace AvlTree;
+﻿using Shared.Abstractions;
 
-public sealed class AvlTree<T> where T : IComparable<T>
+namespace AvlTree;
+
+public sealed class AvlTree<T> : IBinarySearchTree<T>
+    where T : IComparable<T>
 {
-    private TreeNode<T>? _root;
+    private AvlTreeNode<T>? _root;
     private int _count;
     public AvlTree() { }
     public AvlTree(T value) : this()
     {
-        _root = new TreeNode<T>(value);
+        _root = new AvlTreeNode<T>(value);
         _count = 1;
     }
     public AvlTree(IEnumerable<T> values) : this()
@@ -21,17 +24,19 @@ public sealed class AvlTree<T> where T : IComparable<T>
     public int Count => _count;
     public int TreeHeight => _root?.Height ?? -1;
 
-    public void Insert(T value)
+    public bool Insert(T value)
     {
+        var previousCount = _count;
         _root = Insert(_root, value);
+        return previousCount + 1 == _count;
     }
 
-    private TreeNode<T> Insert(TreeNode<T>? root, T value)
+    private AvlTreeNode<T> Insert(AvlTreeNode<T>? root, T value)
     {
         if (root is null)
         {
             _count++;
-            root = new TreeNode<T>(value);
+            root = new AvlTreeNode<T>(value);
             return root;
         }
 
@@ -61,14 +66,19 @@ public sealed class AvlTree<T> where T : IComparable<T>
         return root;
     }
 
-    public void Delete(T value)
+    public bool Delete(T value)
     {
+        var previousCount = _count;
         _root = Delete(_root, value);
+        return previousCount - 1 == _count;
     }
 
-    private TreeNode<T>? Delete(TreeNode<T>? root, T value)
+    private AvlTreeNode<T>? Delete(AvlTreeNode<T>? root, T value)
     {
-        if (root is null) return root;
+        if (root is null)
+        {
+            return root;
+        }
 
         int compareValue = value.CompareTo(root.Value);
 
@@ -115,7 +125,7 @@ public sealed class AvlTree<T> where T : IComparable<T>
         return root;
     }
 
-    private TreeNode<T>? RotationNode(TreeNode<T> root)
+    private AvlTreeNode<T>? RotationNode(AvlTreeNode<T> root)
     {
         int rootHeightBalance = root.GetBalance();
         int leftChildHeightBalance = root.Left?.GetBalance() ?? -1;
@@ -141,9 +151,9 @@ public sealed class AvlTree<T> where T : IComparable<T>
         return null;
     }
 
-    private TreeNode<T> FindMinNode(TreeNode<T> root)
+    private AvlTreeNode<T> FindMinNode(AvlTreeNode<T> root)
     {
-        TreeNode<T> temp = root;
+        AvlTreeNode<T> temp = root;
         while (temp.Left is not null)
         {
             temp = temp.Left;
@@ -151,13 +161,23 @@ public sealed class AvlTree<T> where T : IComparable<T>
         return temp;
     }
 
-    private TreeNode<T> LeftRightRotation(TreeNode<T> root)
+    private AvlTreeNode<T> FindMaxNode(AvlTreeNode<T> root)
+    {
+        AvlTreeNode<T> temp = root;
+        while (temp.Right is not null)
+        {
+            temp = temp.Right;
+        }
+        return temp;
+    }
+
+    private AvlTreeNode<T> LeftRightRotation(AvlTreeNode<T> root)
     {
         if (root.Left is null || root.Left.Right is null)
             throw new InvalidOperationException("Invalid AVL rotation: null child.");
 
-        TreeNode<T> middleNode = root.Left;
-        TreeNode<T> newRoot = root.Left.Right;
+        AvlTreeNode<T> middleNode = root.Left;
+        AvlTreeNode<T> newRoot = root.Left.Right;
 
         root.Left = newRoot.Right;
         middleNode.Right = newRoot.Left;
@@ -171,13 +191,13 @@ public sealed class AvlTree<T> where T : IComparable<T>
         return newRoot;
     }
 
-    private TreeNode<T> RightLeftRotation(TreeNode<T> root)
+    private AvlTreeNode<T> RightLeftRotation(AvlTreeNode<T> root)
     {
         if (root.Right is null || root.Right.Left is null)
             throw new InvalidOperationException("Invalid AVL rotation: null child.");
 
-        TreeNode<T> middleNode = root.Right;
-        TreeNode<T> newRoot = root.Right.Left;
+        AvlTreeNode<T> middleNode = root.Right;
+        AvlTreeNode<T> newRoot = root.Right.Left;
 
         root.Right = newRoot.Left;
         middleNode.Left = newRoot.Right;
@@ -191,12 +211,12 @@ public sealed class AvlTree<T> where T : IComparable<T>
         return newRoot;
     }
 
-    private TreeNode<T> RightRotation(TreeNode<T> root)
+    private AvlTreeNode<T> RightRotation(AvlTreeNode<T> root)
     {
         if (root.Right is null)
             throw new InvalidOperationException("Invalid AVL rotation: null child.");
 
-        TreeNode<T> newRoot = root.Right;
+        AvlTreeNode<T> newRoot = root.Right;
         root.Right = newRoot.Left;
         newRoot.Left = root;
 
@@ -206,12 +226,12 @@ public sealed class AvlTree<T> where T : IComparable<T>
         return newRoot;
     }
 
-    private TreeNode<T> LeftRotation(TreeNode<T> root)
+    private AvlTreeNode<T> LeftRotation(AvlTreeNode<T> root)
     {
         if (root.Left is null)
             throw new InvalidOperationException("Invalid AVL rotation: null child.");
 
-        TreeNode<T> newRoot = root.Left;
+        AvlTreeNode<T> newRoot = root.Left;
         root.Left = newRoot.Right;
         newRoot.Right = root;
 
@@ -228,7 +248,7 @@ public sealed class AvlTree<T> where T : IComparable<T>
         return list;
     }
 
-    private void InOrder(TreeNode<T>? root, List<T> list)
+    private void InOrder(AvlTreeNode<T>? root, List<T> list)
     {
         if (root is null) return;
 
@@ -244,7 +264,7 @@ public sealed class AvlTree<T> where T : IComparable<T>
         return list;
     }
 
-    private void PreOrder(TreeNode<T>? root, List<T> list)
+    private void PreOrder(AvlTreeNode<T>? root, List<T> list)
     {
         if (root is null) return;
 
@@ -260,7 +280,7 @@ public sealed class AvlTree<T> where T : IComparable<T>
         return list;
     }
 
-    private void PostOrder(TreeNode<T>? root, List<T> list)
+    private void PostOrder(AvlTreeNode<T>? root, List<T> list)
     {
         if (root is null) return;
 
@@ -269,27 +289,13 @@ public sealed class AvlTree<T> where T : IComparable<T>
         list.Add(root.Value);
     }
 
-    public bool Search(T value)
-    {
-        return Search(_root, value);
-    }
-
-    private bool Search(TreeNode<T>? root, T value)
-    {
-        if (root is null) return false;
-
-        int compareValue = value.CompareTo(root.Value);
-
-        if (compareValue == 0) return true;
-
-        return compareValue < 0 ? Search(root.Left, value) : Search(root.Right, value);
-    }
+    public bool Search(T value) => FindNode(value) is not null;
 
     public IList<IList<T>> Bfs()
     {
         var list = new List<IList<T>>(_count);
 
-        var queue = new Queue<TreeNode<T>>();
+        var queue = new Queue<AvlTreeNode<T>>();
         if (_root is not null) queue.Enqueue(_root);
 
         int level = 0;
@@ -318,4 +324,46 @@ public sealed class AvlTree<T> where T : IComparable<T>
 
         return list;
     }
+
+    private AvlTreeNode<T> FindNode(T value)
+    {
+        var current = _root;
+
+        while (current is not null)
+        {
+            int compareValue = value.CompareTo(current.Value);
+
+            if (compareValue == 0)
+            {
+                return current;
+            }
+
+            current = compareValue < 0 ? current.Left : current.Right;
+        }
+
+        return default!;
+    }
+
+    public T Get(T value)
+    {
+        return FindNode(value).Value;
+    }
+
+    public bool Update(T value)
+    {
+        var node = FindNode(value);
+
+        if (node is null)
+        {
+            return false;
+        }
+
+        node.Value = value;
+
+        return true;
+    }
+
+    public T Max() => FindMaxNode(_root!).Value ?? default!;
+
+    public T Min() => FindMinNode(_root!).Value ?? default!;
 }
