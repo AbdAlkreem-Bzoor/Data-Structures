@@ -136,7 +136,6 @@ public sealed class RedBlackTree<T> : IBinarySearchTree<T>
         _root.Color = Color.Black;
     }
 
-
     public bool Delete(T value)
     {
         var nodeToDelete = FindNode(value);
@@ -393,7 +392,7 @@ public sealed class RedBlackTree<T> : IBinarySearchTree<T>
     {
         var node = FindNode(value);
 
-        if (node is null)
+        if (node == _nil)
         {
             return false;
         }
@@ -403,9 +402,9 @@ public sealed class RedBlackTree<T> : IBinarySearchTree<T>
         return true;
     }
 
-    public T Max() => FindMaxNode(_root!).Value ?? default!;
+    public T Max() => FindMaxNode(_root).Value;
 
-    public T Min() => FindMinNode(_root!).Value ?? default!;
+    public T Min() => FindMinNode(_root).Value;
 
     public IEnumerable<T> InOrder()
     {
@@ -414,9 +413,9 @@ public sealed class RedBlackTree<T> : IBinarySearchTree<T>
         return list;
     }
 
-    private void InOrder(RedBlackTreeNode<T>? root, List<T> list)
+    private void InOrder(RedBlackTreeNode<T> root, List<T> list)
     {
-        if (root is null) return;
+        if (root == _nil) return;
 
         InOrder(root.Left, list);
         list.Add(root.Value);
@@ -430,9 +429,9 @@ public sealed class RedBlackTree<T> : IBinarySearchTree<T>
         return list;
     }
 
-    private void PreOrder(RedBlackTreeNode<T>? root, List<T> list)
+    private void PreOrder(RedBlackTreeNode<T> root, List<T> list)
     {
-        if (root is null) return;
+        if (root == _nil) return;
 
         list.Add(root.Value);
         PreOrder(root.Left, list);
@@ -446,9 +445,9 @@ public sealed class RedBlackTree<T> : IBinarySearchTree<T>
         return list;
     }
 
-    private void PostOrder(RedBlackTreeNode<T>? root, List<T> list)
+    private void PostOrder(RedBlackTreeNode<T> root, List<T> list)
     {
-        if (root is null) return;
+        if (root == _nil) return;
 
         PostOrder(root.Left, list);
         PostOrder(root.Right, list);
@@ -460,7 +459,10 @@ public sealed class RedBlackTree<T> : IBinarySearchTree<T>
         var list = new List<IList<T>>(_count);
 
         var queue = new Queue<RedBlackTreeNode<T>>();
-        if (_root is not null) queue.Enqueue(_root);
+        if (_root != _nil)
+        {
+            queue.Enqueue(_root);
+        }
 
         int level = 0;
         while (queue.Count > 0)
@@ -471,12 +473,12 @@ public sealed class RedBlackTree<T> : IBinarySearchTree<T>
             {
                 var node = queue.Dequeue();
 
-                if (node.Left is not null)
+                if (node.Left != _nil)
                 {
                     queue.Enqueue(node.Left);
                 }
 
-                if (node.Right is not null)
+                if (node.Right != _nil)
                 {
                     queue.Enqueue(node.Right);
                 }

@@ -85,11 +85,11 @@ public sealed class SortedDictionary<TKey, TValue>
         }
         set
         {
-            UpdateKey(key, value);
+            UpdateKeyValue(key, value);
         }
     }
 
-    public void UpdateKey(TKey key, TValue value)
+    public void UpdateKeyValue(TKey key, TValue value)
     {
         _tree.Update(new Pair<TKey, TValue>(key, value));
     }
