@@ -8,7 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\AvlTree\AvlTree.csproj" />
+    <ProjectReference Include="..\Deque\Deque.csproj" />
     <ProjectReference Include="..\LinkedList\LinkedList.csproj" />
   </ItemGroup>
 

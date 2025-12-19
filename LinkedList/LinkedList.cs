@@ -79,8 +79,10 @@ public sealed class LinkedList<T>
         }
     }
 
-    private void RemoveFirst()
+    public T RemoveFirst()
     {
+        T removed = _head!.Value;
+
         if (Count == 1)
         {
             _head = _tail = null;
@@ -90,10 +92,14 @@ public sealed class LinkedList<T>
             _head = _head!.Next;
         }
         Count--;
+
+        return removed;
     }
 
-    private void RemoveLast()
+    public T RemoveLast()
     {
+        T removed = _tail!.Value;
+
         if (Count == 1)
         {
             _head = _tail = null;
@@ -106,6 +112,8 @@ public sealed class LinkedList<T>
             _tail = previousNode;
         }
         Count--;
+
+        return removed;
     }
 
     public void RemoveAt(int index)
