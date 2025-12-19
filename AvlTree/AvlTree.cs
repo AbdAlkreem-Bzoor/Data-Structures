@@ -66,11 +66,16 @@ public sealed class AvlTree<T> : IBinarySearchTree<T>
         return root;
     }
 
+    private bool nodeFound = false;
     public bool Delete(T value)
     {
-        var previousCount = _count;
+        nodeFound = false;
         _root = Delete(_root, value);
-        return previousCount - 1 == _count;
+        if (nodeFound)
+        {
+            _count--;
+        }
+        return nodeFound;
     }
 
     private AvlTreeNode<T>? Delete(AvlTreeNode<T>? root, T value)
@@ -92,7 +97,7 @@ public sealed class AvlTree<T> : IBinarySearchTree<T>
         }
         else
         {
-            _count--;
+            nodeFound = true;
             if (root.Left is null && root.Right is null)
             {
                 return null;
@@ -128,47 +133,64 @@ public sealed class AvlTree<T> : IBinarySearchTree<T>
     private AvlTreeNode<T>? RotationNode(AvlTreeNode<T> root)
     {
         int rootHeightBalance = root.GetBalance();
-        int leftChildHeightBalance = root.Left?.GetBalance() ?? -1;
-        int rightChildHeightBalance = root.Right?.GetBalance() ?? -1;
+        int leftChildHeightBalance = root.Left?.GetBalance() ?? 0;
+        int rightChildHeightBalance = root.Right?.GetBalance() ?? 0;
 
-        if (rootHeightBalance == -2 && rightChildHeightBalance == -1)              // RR case
+        if (rootHeightBalance <= -2)
         {
-            return RightRotation(root);
+            if (rightChildHeightBalance <= 0)
+            {
+                return LeftRotation(root);
+            }
+            else
+            {
+                return RightLeftRotation(root);
+            }
         }
-        else if (rootHeightBalance == 2 && leftChildHeightBalance == 1)           // LL case
+
+        else if (rootHeightBalance >= 2)
         {
-            return LeftRotation(root);
-        }
-        else if (rootHeightBalance == -2 && rightChildHeightBalance == 1)          // RL case
-        {
-            return RightLeftRotation(root);
-        }
-        else if (rootHeightBalance == 2 && leftChildHeightBalance == -1)          // LR case
-        {
-            return LeftRightRotation(root);
+            if (leftChildHeightBalance >= 0)
+            {
+                return RightRotation(root);
+            }
+            else
+            {
+                return LeftRightRotation(root);
+            }
         }
 
         return null;
     }
 
-    private AvlTreeNode<T> FindMinNode(AvlTreeNode<T> root)
+    private AvlTreeNode<T> LeftRotation(AvlTreeNode<T> root)
     {
-        AvlTreeNode<T> temp = root;
-        while (temp.Left is not null)
-        {
-            temp = temp.Left;
-        }
-        return temp;
+        if (root.Right is null)
+            throw new InvalidOperationException("Invalid AVL rotation: null child.");
+
+        AvlTreeNode<T> newRoot = root.Right;
+        root.Right = newRoot.Left;
+        newRoot.Left = root;
+
+        root.UpdateHeight();
+        newRoot.UpdateHeight();
+
+        return newRoot;
     }
 
-    private AvlTreeNode<T> FindMaxNode(AvlTreeNode<T> root)
+    private AvlTreeNode<T> RightRotation(AvlTreeNode<T> root)
     {
-        AvlTreeNode<T> temp = root;
-        while (temp.Right is not null)
-        {
-            temp = temp.Right;
-        }
-        return temp;
+        if (root.Left is null)
+            throw new InvalidOperationException("Invalid AVL rotation: null child.");
+
+        AvlTreeNode<T> newRoot = root.Left;
+        root.Left = newRoot.Right;
+        newRoot.Right = root;
+
+        root.UpdateHeight();
+        newRoot.UpdateHeight();
+
+        return newRoot;
     }
 
     private AvlTreeNode<T> LeftRightRotation(AvlTreeNode<T> root)
@@ -211,37 +233,27 @@ public sealed class AvlTree<T> : IBinarySearchTree<T>
         return newRoot;
     }
 
-    private AvlTreeNode<T> RightRotation(AvlTreeNode<T> root)
+    private AvlTreeNode<T> FindMinNode(AvlTreeNode<T> root)
     {
-        if (root.Right is null)
-            throw new InvalidOperationException("Invalid AVL rotation: null child.");
-
-        AvlTreeNode<T> newRoot = root.Right;
-        root.Right = newRoot.Left;
-        newRoot.Left = root;
-
-        root.UpdateHeight();
-        newRoot.UpdateHeight();
-
-        return newRoot;
+        AvlTreeNode<T> temp = root;
+        while (temp.Left is not null)
+        {
+            temp = temp.Left;
+        }
+        return temp;
     }
 
-    private AvlTreeNode<T> LeftRotation(AvlTreeNode<T> root)
+    private AvlTreeNode<T> FindMaxNode(AvlTreeNode<T> root)
     {
-        if (root.Left is null)
-            throw new InvalidOperationException("Invalid AVL rotation: null child.");
-
-        AvlTreeNode<T> newRoot = root.Left;
-        root.Left = newRoot.Right;
-        newRoot.Right = root;
-
-        root.UpdateHeight();
-        newRoot.UpdateHeight();
-
-        return newRoot;
+        AvlTreeNode<T> temp = root;
+        while (temp.Right is not null)
+        {
+            temp = temp.Right;
+        }
+        return temp;
     }
 
-    private AvlTreeNode<T> FindNode(T value)
+    private AvlTreeNode<T>? FindNode(T value)
     {
         var current = _root;
 
@@ -257,12 +269,19 @@ public sealed class AvlTree<T> : IBinarySearchTree<T>
             current = compareValue < 0 ? current.Left : current.Right;
         }
 
-        return default!;
+        return null;
     }
 
     public T Get(T value)
     {
-        return FindNode(value).Value;
+        var node = FindNode(value);
+
+        if (node is null)
+        {
+            return default!;
+        }
+
+        return node.Value;
     }
 
     public bool Update(T value)

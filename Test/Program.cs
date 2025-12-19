@@ -1,7 +1,4 @@
-﻿using Deque;
-using LinkedList;
-
-
+﻿using LinkedList;
 
 bool IsPalindrome(string str)
 {
