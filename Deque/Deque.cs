@@ -2,43 +2,52 @@
 
 public sealed class Deque<T>
 {
-    private T[] _list;
-    private int _capacity = 10;
+    private T[] _list = [];
+    private int _capacity;
     private int _headIndex;
     private int _tailIndex;
 
-    public Deque()
+    private void Init(int capacity = 10)
     {
+        if (capacity < 1)
+        {
+            capacity = 1;
+        }
+
+        _capacity = capacity;
         _list = new T[_capacity];
         _headIndex = 1;
         _tailIndex = -1;
     }
 
-    public Deque(int capacity) : this()
+    public Deque()
     {
-        _capacity = capacity;
-        _list = new T[_capacity];
+        Init();
+    }
+
+    public Deque(int capacity)
+    {
+        Init(capacity);
     }
 
     public Deque(IEnumerable<T> list)
     {
-        _list = list.ToArray();
-        _capacity = _list.Length;
+        var array = list.ToArray();
+        if (array.Length == 0)
+        {
+            Init();
+            return;
+        }
+
+        _capacity = array.Length;
+        _list = array;
         _headIndex = 0;
         _tailIndex = _capacity - 1;
     }
 
-    public int Count
-    {
-        get
-        {
-            int size = _tailIndex - _headIndex + 1;
+    public int Count => _headIndex > _tailIndex ? 0 : _tailIndex - _headIndex + 1;
 
-            return size == -1 ? 0 : size;
-        }
-    }
-
-    public void AddFirst(T item)
+    public void AddFirst(T value)
     {
         if (_headIndex > _tailIndex)
         {
@@ -46,10 +55,24 @@ public sealed class Deque<T>
         }
         else if (_headIndex == 0)
         {
-            ResizeList();
+            Resize();
         }
 
-        _list[--_headIndex] = item;
+        _list[--_headIndex] = value;
+    }
+
+    public void AddLast(T value)
+    {
+        if (_headIndex > _tailIndex)
+        {
+            _headIndex--;
+        }
+        else if (_tailIndex == _capacity - 1)
+        {
+            Resize();
+        }
+
+        _list[++_tailIndex] = value;
     }
 
     public void RemoveFirst()
@@ -63,20 +86,6 @@ public sealed class Deque<T>
         _headIndex++;
     }
 
-    public void AddLast(T item)
-    {
-        if (_headIndex > _tailIndex)
-        {
-            _headIndex--;
-        }
-        else if (_tailIndex == _capacity - 1)
-        {
-            ResizeList();
-        }
-
-        _list[++_tailIndex] = item;
-    }
-
     public void RemoveLast()
     {
         if (_headIndex > _tailIndex)
@@ -88,44 +97,53 @@ public sealed class Deque<T>
         _tailIndex--;
     }
 
+    public T Get(int index)
+    {
+        if (index < 0 || index >= Count)
+            throw new IndexOutOfRangeException();
+
+        return _list[_headIndex + index];
+    }
+
+    public void Set(int index, T value)
+    {
+        if (index < 0 || index >= Count)
+            throw new IndexOutOfRangeException();
+
+        _list[_headIndex + index] = value;
+    }
+
     public T this[int index]
     {
         get
         {
-            int size = Count;
-
-            if (index < 0 || index >= size)
-                throw new IndexOutOfRangeException();
-
-            return _list[index + _headIndex];
+            return Get(index);
         }
 
         set
         {
-            int size = Count;
-
-            if (index < 0 || index >= size)
-                throw new IndexOutOfRangeException();
-
-            _list[index + _headIndex] = value;
+            Set(index, value);
         }
     }
 
-    private void ResizeList()
+    private void Resize()
     {
-        int count = _capacity;
-        int newHead = _headIndex + count;
-        int newTail = _tailIndex + count;
-        _capacity *= 2;
+        int oldCount = Count;
+        int oldCapacity = _capacity;
 
-        var temp = new T[_capacity];
-        for (int i = 0; i < Count; i++)
-            temp[i + newHead] = this[i];
+        int newCapacity = oldCapacity * 3;
+        var temp = new T[newCapacity];
 
-        _headIndex = newHead;
-        _tailIndex = newTail;
+        int newHead = oldCapacity;
+
+        for (int index = 0; index < oldCount; index++)
+            temp[newHead + index] = this[index];
 
         _list = temp;
+        _capacity = newCapacity;
+
+        _headIndex = newHead;
+        _tailIndex = newHead + oldCount - 1;
     }
 }
 

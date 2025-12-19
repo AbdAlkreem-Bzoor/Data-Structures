@@ -88,8 +88,10 @@ public sealed class DoublyLinkedList<T>
         }
     }
 
-    private void RemoveFirst()
+    public T RemoveFirst()
     {
+        T removed = _head!.Value;
+
         if (Count == 1)
         {
             _head = _tail = null;
@@ -100,10 +102,14 @@ public sealed class DoublyLinkedList<T>
             _head!.Previous = null;
         }
         Count--;
+
+        return removed;
     }
 
-    private void RemoveLast()
+    public T RemoveLast()
     {
+        T removed = _tail!.Value;
+
         if (Count == 1)
         {
             _head = _tail = null;
@@ -114,6 +120,8 @@ public sealed class DoublyLinkedList<T>
             _tail!.Next = null;
         }
         Count--;
+
+        return removed;
     }
 
     public void RemoveAt(int index)
