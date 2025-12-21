@@ -1,6 +1,5 @@
 ﻿
 
-
 //bool IsPalindrome(string str)
 //{
 //    for (int i = 0, j = str.Length - 1; i < j; i++, j--)

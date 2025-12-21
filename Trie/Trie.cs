@@ -57,7 +57,7 @@ public sealed class Trie
         temp.Terminal = true;
     }
 
-    private bool Search(TrieNode node, string word, int index, 
+    private bool Search(TrieNode node, string word, int index,
                         HashSet<char> matchCharacters,
                         Predicate<TrieNode> predicate)
     {
@@ -70,7 +70,7 @@ public sealed class Trie
 
         if (matchCharacters.Contains(character))
         {
-            foreach (var child in node.Children)
+            foreach (var (ch, child) in node.Children)
             {
                 if (Search(child, word, index + 1, matchCharacters, predicate))
                 {
@@ -102,5 +102,37 @@ public sealed class Trie
     public bool StartsWith(string prefix, IEnumerable<char> matchCharacters)
     {
         return Search(_root, prefix, 0, matchCharacters.ToHashSet(), node => true);
+    }
+
+    public bool SearchWithDifference(string word, int ignoreCharactersCount)
+    {
+        return SearchWithDifference(_root, in word, 0, 0, in ignoreCharactersCount);
+    }
+
+    private bool SearchWithDifference(TrieNode node, in string word, int index,
+                                int difference, in int ignoreCharactersCount)
+    {
+        if (difference > ignoreCharactersCount)
+        {
+            return false;
+        }
+
+        if (index == word.Length)
+        {
+            return difference == ignoreCharactersCount && node.Terminal;
+        }
+
+        char character = word[index];
+
+        foreach (var (ch, child) in node.Children)
+        {
+            int newDifference = difference + (character == ch ? 0 : 1);
+            if (SearchWithDifference(child, in word, index + 1, newDifference, in ignoreCharactersCount))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
