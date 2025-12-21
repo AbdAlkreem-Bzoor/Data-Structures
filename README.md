@@ -29,3 +29,4 @@ The code was tested on large inputs using the following LeetCode problem:
 
 - [Implement Trie (Prefix Tree)](https://leetcode.com/problems/implement-trie-prefix-tree/submissions/1860434868/)
 - [Design Add and Search Words Data Structure](https://leetcode.com/problems/design-add-and-search-words-data-structure/submissions/1860429938/)
+- [Implement Magic Dictionary](https://leetcode.com/problems/implement-magic-dictionary/submissions/1861792190/)
