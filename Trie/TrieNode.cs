@@ -13,7 +13,7 @@ internal sealed class TrieNode
 
     public int ChildrenCount => _children.Count;
 
-    public IEnumerable<TrieNode> Children => _children.Values;
+    public Dictionary<char, TrieNode> Children => _children;
 
     public TrieNode? GetChildNode(char ch)
     {
