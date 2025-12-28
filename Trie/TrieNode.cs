@@ -3,7 +3,7 @@
 internal sealed class TrieNode
 {
     public bool Terminal { get; set; }
-    private readonly Dictionary<char, TrieNode> _children;
+    private readonly SortedDictionary<char, TrieNode> _children;
 
     public TrieNode()
     {
@@ -13,29 +13,29 @@ internal sealed class TrieNode
 
     public int ChildrenCount => _children.Count;
 
-    public Dictionary<char, TrieNode> Children => _children;
+    public SortedDictionary<char, TrieNode> Children => _children;
 
-    public TrieNode? GetChildNode(char ch)
+    public TrieNode? GetChildNode(char character)
     {
-        _children.TryGetValue(ch, out var node);
+        _children.TryGetValue(character, out var node);
         return node;
     }
 
-    public TrieNode InsertChild(char ch)
+    public TrieNode InsertChild(char character)
     {
-        if (_children.TryGetValue(ch, out var child))
+        if (_children.TryGetValue(character, out var child))
         {
             return child;
         }
 
         var newNode = new TrieNode();
-        _children.Add(ch, newNode);
+        _children.Add(character, newNode);
 
         return newNode;
     }
 
-    public bool RemoveChild(char ch)
+    public bool RemoveChild(char character)
     {
-        return _children.Remove(ch);
+        return _children.Remove(character);
     }
 }

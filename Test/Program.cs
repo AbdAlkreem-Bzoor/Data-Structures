@@ -1,4 +1,13 @@
-﻿
+﻿using System.Text;
+
+namespace Test;
+
+// SortedSet.GetViewBetween(lowerValue, upperValue).Count is O(k) where K is the size of the view
+// SortedSet.GetViewBetween(lowerValue, upperValue).Min is O(log n) where n is the size of the set
+// SortedSet.GetViewBetween(lowerValue, upperValue).Max is O(log n) where n is the size of the set
+
+
+
 
 //bool IsPalindrome(string str)
 //{
