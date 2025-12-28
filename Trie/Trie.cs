@@ -1,4 +1,6 @@
-﻿namespace Trie;
+﻿using System.Text;
+
+namespace Trie;
 
 public sealed class Trie
 {
@@ -57,8 +59,93 @@ public sealed class Trie
         temp.Terminal = true;
     }
 
-    private bool Search(TrieNode node, string word, int index,
-                        HashSet<char> matchCharacters,
+    private bool Search(string word, Predicate<TrieNode> predicate)
+    {
+        var current = _root;
+
+        foreach (var character in word)
+        {
+            current = current.GetChildNode(character);
+            if (current is null)
+            {
+                return false;
+            }
+        }
+
+        return predicate(current);
+    }
+
+    public bool Search(string word)
+    {
+        return Search(word, node => node.Terminal);
+    }
+
+    public bool StartsWith(string prefix)
+    {
+        return Search(prefix, node => true);
+    }
+
+    public IList<string> Autocomplete(string prefix, int limit = 3)
+    {
+        var prefixNode = _root;
+
+        foreach (char character in prefix)
+        {
+            prefixNode = prefixNode.GetChildNode(character);
+            if (prefixNode is null)
+            {
+                return [];
+            }
+        }
+
+        var suffixes = new List<string>();
+        var builder = new StringBuilder(prefix);
+
+        AutocompleteDfs(prefixNode, limit, builder, suffixes);
+
+        return suffixes;
+    }
+
+    private bool AutocompleteDfs(TrieNode prefixNode, int limit,
+                                 StringBuilder builder, List<string> results)
+    {
+        if (results.Count >= limit)
+        {
+            return true;
+        }
+        if (prefixNode.Terminal)
+        {
+            results.Add(builder.ToString());
+
+            if (results.Count >= limit)
+            {
+                return true;
+            }
+        }
+
+        foreach (var (character, child) in prefixNode.Children)
+        {
+            builder.Append(character);
+
+            if (AutocompleteDfs(child, limit, builder, results))
+            {
+                return true;
+            }
+
+            builder.Remove(builder.Length - 1, 1);
+        }
+
+        return false;
+    }
+
+    private readonly HashSet<char> _wildcards = ['.'];
+
+    public bool Matches(string pattern)
+    {
+        return Search(_root, in pattern, 0, node => node.Terminal);
+    }
+
+    private bool Search(TrieNode node, in string word, int index,
                         Predicate<TrieNode> predicate)
     {
         if (index == word.Length)
@@ -68,11 +155,11 @@ public sealed class Trie
 
         char character = word[index];
 
-        if (matchCharacters.Contains(character))
+        if (_wildcards.Contains(character))
         {
             foreach (var (ch, child) in node.Children)
             {
-                if (Search(child, word, index + 1, matchCharacters, predicate))
+                if (Search(child, word, index + 1, predicate))
                 {
                     return true;
                 }
@@ -81,58 +168,53 @@ public sealed class Trie
         }
 
         var next = node.GetChildNode(character);
-        return next is not null && Search(next, word, index + 1, matchCharacters, predicate);
+
+        return next is not null && Search(next, word, index + 1, predicate);
     }
 
-    public bool Search(string word)
+    public List<string> Sort()
     {
-        return Search(_root, word, 0, [], node => node.Terminal);
+        var sortedWords = new List<string>();
+
+        SortDfs(_root, new StringBuilder(), sortedWords);
+
+        return sortedWords;
     }
 
-    public bool Search(string word, IEnumerable<char> matchCharacters)
+    private void SortDfs(TrieNode node, StringBuilder builder, List<string> results)
     {
-        return Search(_root, word, 0, matchCharacters.ToHashSet(), node => node.Terminal);
-    }
-
-    public bool StartsWith(string prefix)
-    {
-        return Search(_root, prefix, 0, [], node => true);
-    }
-
-    public bool StartsWith(string prefix, IEnumerable<char> matchCharacters)
-    {
-        return Search(_root, prefix, 0, matchCharacters.ToHashSet(), node => true);
-    }
-
-    public bool SearchWithDifference(string word, int ignoreCharactersCount)
-    {
-        return SearchWithDifference(_root, in word, 0, 0, in ignoreCharactersCount);
-    }
-
-    private bool SearchWithDifference(TrieNode node, in string word, int index,
-                                int difference, in int ignoreCharactersCount)
-    {
-        if (difference > ignoreCharactersCount)
+        if (node.Terminal)
         {
-            return false;
+            results.Add(builder.ToString());
         }
 
-        if (index == word.Length)
+        foreach (var (character, child) in node.Children)
         {
-            return difference == ignoreCharactersCount && node.Terminal;
+            builder.Append(character);
+
+            SortDfs(child, builder, results);
+
+            builder.Remove(builder.Length - 1, 1);
         }
-
-        char character = word[index];
-
-        foreach (var (ch, child) in node.Children)
-        {
-            int newDifference = difference + (character == ch ? 0 : 1);
-            if (SearchWithDifference(child, in word, index + 1, newDifference, in ignoreCharactersCount))
-            {
-                return true;
-            }
-        }
-
-        return false;
     }
+
+    public string GetLongestCommonPrefix()
+    {
+        var current = _root;
+
+        var prefix = new StringBuilder();
+
+        while (current.Children.Count == 1 && !current.Terminal)
+        {
+            var (character, child) = current.Children.First();
+
+            prefix.Append(character);
+
+            current = child;
+        }
+
+        return prefix.ToString();
+    }
+
+    // TODO: Autocorrect & Fuzzy Search
 }
