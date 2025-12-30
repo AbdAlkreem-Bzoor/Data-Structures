@@ -142,10 +142,10 @@ public sealed class Trie
 
     public bool Matches(string pattern)
     {
-        return Search(_root, in pattern, 0, node => node.Terminal);
+        return MatchesSearch(_root, in pattern, 0, node => node.Terminal);
     }
 
-    private bool Search(TrieNode node, in string word, int index,
+    private bool MatchesSearch(TrieNode node, in string word, int index,
                         Predicate<TrieNode> predicate)
     {
         if (index == word.Length)
@@ -159,7 +159,7 @@ public sealed class Trie
         {
             foreach (var (ch, child) in node.Children)
             {
-                if (Search(child, word, index + 1, predicate))
+                if (MatchesSearch(child, word, index + 1, predicate))
                 {
                     return true;
                 }
@@ -169,7 +169,7 @@ public sealed class Trie
 
         var next = node.GetChildNode(character);
 
-        return next is not null && Search(next, word, index + 1, predicate);
+        return next is not null && MatchesSearch(next, word, index + 1, predicate);
     }
 
     public List<string> Sort()
