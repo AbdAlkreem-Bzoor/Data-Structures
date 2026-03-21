@@ -2,8 +2,10 @@
 
 internal sealed class TrieNode
 {
-    public bool Terminal { get; set; }
     private readonly SortedDictionary<char, TrieNode> _children;
+
+    public bool Terminal { get; set; }
+    public string Word { get; set; } = string.Empty;
 
     public TrieNode()
     {
