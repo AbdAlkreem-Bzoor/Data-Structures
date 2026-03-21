@@ -25,6 +25,7 @@ public sealed class Trie
             }
 
             node.Terminal = false;
+            node.Word = string.Empty;
             return node.ChildrenCount == 0;
         }
 
@@ -57,6 +58,7 @@ public sealed class Trie
         }
 
         temp.Terminal = true;
+        temp.Word = word;
     }
 
     private bool Search(string word, Predicate<TrieNode> predicate)
