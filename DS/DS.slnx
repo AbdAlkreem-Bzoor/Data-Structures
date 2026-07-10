@@ -1,0 +1,15 @@
+<Solution>
+  <Project Path="DS.AVLTree/DS.AVLTree.csproj" />
+  <Project Path="DS.Deque/DS.Deque.csproj" />
+  <Project Path="DS.DoublyLinkedList/DS.DoublyLinkedList.csproj" />
+  <Project Path="DS.Heap/DS.Heap.csproj" />
+  <Project Path="DS.LinkedList/DS.LinkedList.csproj" />
+  <Project Path="DS.PriorityQueue/DS.PriorityQueue.csproj" />
+  <Project Path="DS.Queue/DS.Queue.csproj" />
+  <Project Path="DS.RedBlackTree/DS.RedBlackTree.csproj" />
+  <Project Path="DS.Shared/DS.Shared.csproj" />
+  <Project Path="DS.SortedDictionary/DS.SortedDictionary.csproj" />
+  <Project Path="DS.SortedSet/DS.SortedSet.csproj" />
+  <Project Path="DS.Stack/DS.Stack.csproj" />
+  <Project Path="DS.Trie/DS.Trie.csproj" />
+</Solution>
